@@ -17,15 +17,15 @@ class Player extends Sprite {
   render() {
     image(sprite, this.x, this.y, 100, 100);
   }
-  move() {
-    if (keyIsDown(68)) {
+ move() {
+    if (keyIsDown(68)&&this.x<width) {
       this.x += this.speed;
-    } else if (keyIsDown(65)) {
+    } else if (keyIsDown(65)&&this.x>0) {
       this.x -= player.speed;
     }
-    if (keyIsDown(87)) {
+    if (keyIsDown(87)&&this.y>0) {
       this.y -= this.speed;
-    } else if (keyIsDown(83)) {
+    } else if (keyIsDown(83)&&this.y<height) {
       this.y += this.speed;
     }
   }
@@ -195,8 +195,19 @@ function collided(sprite1, sprite2) {
   return distanceBetween <= sumOfRadii;
 }
 
-function adjust() {
+function adjustPlayer() {
   const characters = [player, ...enemies];
+  for (let i = 0; i < characters.length; i++) {
+    for (let j = i + 1; j < characters.length; j++) {
+      if((player.x<width)&&player.x>0&&player.y>0&&player.y<height) {
+      pushOff(characters[i], characters[j]);
+      }
+    }
+  }
+}
+
+function adjustEnemies() {
+  const characters = [...enemies];
   for (let i = 0; i < characters.length; i++) {
     for (let j = i + 1; j < characters.length; j++) {
       pushOff(characters[i], characters[j]);
@@ -247,6 +258,7 @@ function draw() {
   player.render();
   player.move();
   doEnemyBehavior();
-  adjust();
+  adjustPlayer();
+  adjustEnemies();
   checkScarecrow();
 }
