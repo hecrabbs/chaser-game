@@ -15,22 +15,23 @@ class Player extends Sprite {
     this.speed = 5;
   }
   render() {
-    image(sprite, this.x, this.y, 100, 100);
+    image(playerSprite, this.x, this.y, 100, 100);  
   }
- move() {
-    if (keyIsDown(68)&&this.x<width) {
+  move() {
+    if (keyIsDown(68) && this.x < width - this.diameter/2) {
       this.x += this.speed;
-    } else if (keyIsDown(65)&&this.x>0) {
+    } else if (keyIsDown(65) && this.x > 0 + this.diameter/2) {
       this.x -= player.speed;
     }
-    if (keyIsDown(87)&&this.y>0) {
+    if (keyIsDown(87) && this.y > 0 + this.diameter/2) {
       this.y -= this.speed;
-    } else if (keyIsDown(83)&&this.y<height) {
+    } else if (keyIsDown(83) && this.y < height - this.diameter/2) {
       this.y += this.speed;
     }
   }
   takeHit() {
     this.health -= 0.5;
+    hitSound.play(0,3);
     healthBar.value = this.health;
   }
 }
@@ -41,8 +42,7 @@ class Enemy extends Sprite {
     this.speed = speed;
   }
   render() {
-    fill(this.color);
-    circle(this.x, this.y, this.diameter);
+    image(playerSprite, this.x, this.y, 100, 100);
   }
   move() {
     if (scarecrow.active) {
@@ -88,16 +88,26 @@ const waveNumber = document.querySelector("#wave");
 let width = 800;
 let height = 600;
 let playerSprite;
+let enemySprite;
+let scarecrowSprite;
 let player = new Player();
+let enemies = [];
 let scarecrow = new Scarecrow();
 let timeout = false;
 let wave = 1;
-let enemies = [];
 let spawning = true;
 let paused = false;
+let hitSound;
+let gameOverSound;
+let gameOverFont;
 
 function preload() {
-  sprite = loadImage("https://hecrabbs.github.io/chaser-game/Toal.jpg");
+  playerSprite = loadImage("https://hecrabbs.github.io/chaser-game/Assets/Toal.png");
+  enemySprite = loadImage("https://hecrabbs.github.io/chaser-game/Assets/Toal.png");
+  soundFormats('mp3');
+  hitSound = loadSound('https://hecrabbs.github.io/chaser-game/Assets/hitSound.mp3');
+  gameOverSound = loadSound('https://hecrabbs.github.io/chaser-game/Assets/gameOverSound.mp3')
+  gameOverFont = loadFont('https://hecrabbs.github.io/chaser-game/Assets/game_over.ttf')
 }
 
 function pause() {
@@ -121,6 +131,9 @@ function setup() {
   cnv.parent("canvasHolder");
   imageMode(CENTER);
   rectMode(CENTER);
+  textAlign(CENTER);
+  hitSound.setVolume(1);
+  hitSound.playMode('untilDone');
 }
 
 function usedScarecrow() {
@@ -195,26 +208,6 @@ function collided(sprite1, sprite2) {
   return distanceBetween <= sumOfRadii;
 }
 
-function adjustPlayer() {
-  const characters = [player, ...enemies];
-  for (let i = 0; i < characters.length; i++) {
-    for (let j = i + 1; j < characters.length; j++) {
-      if((player.x<width)&&player.x>0&&player.y>0&&player.y<height) {
-      pushOff(characters[i], characters[j]);
-      }
-    }
-  }
-}
-
-function adjustEnemies() {
-  const characters = [...enemies];
-  for (let i = 0; i < characters.length; i++) {
-    for (let j = i + 1; j < characters.length; j++) {
-      pushOff(characters[i], characters[j]);
-    }
-  }
-}
-
 function pushOff(c1, c2) {
   let [dx, dy] = [c2.x - c1.x, c2.y - c1.y];
   const distance = Math.hypot(dx, dy);
@@ -229,11 +222,31 @@ function pushOff(c1, c2) {
   }
 }
 
+function adjust() {
+  let characters;
+if (player.x < width - player.diameter/2 && player.x > 0 + player.diameter/2 && player.y > 0 + player.diameter/2 && player.y < height - player.diameter/2){
+
+   characters = [player, ...enemies];
+}else {
+   characters = [...enemies];
+}
+  for (let i = 0; i < characters.length; i++) {
+    for (let j = i + 1; j < characters.length; j++) {
+      pushOff(characters[i], characters[j]);
+    }
+  }
+}
+
 function checkForDamage(player, enemy) {
   if (collided(player, enemy)) {
     player.takeHit();
   }
   if (healthBar.value === 0) {
+    fill('black');
+    textFont(gameOverFont);
+    textSize(100);
+    text('GAME OVER',width/2,height/2);
+    gameOverSound.play(0,1.5);
     noLoop();
   }
 }
@@ -258,7 +271,8 @@ function draw() {
   player.render();
   player.move();
   doEnemyBehavior();
-  adjustPlayer();
-  adjustEnemies();
+  adjust();
   checkScarecrow();
 }
+
+
