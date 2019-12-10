@@ -178,7 +178,7 @@ function checkForBomb() {
 
 function preload() {
   playerSprite = loadImage(
-    "https://hecrabbs.github.io/chaser-game/Assets/Toal.png"
+    "https://hecrabbs.github.io/chaser-game/Assets/playerSprite.png"
   );
   enemySprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/Toal.png"
