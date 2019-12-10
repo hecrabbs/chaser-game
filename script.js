@@ -268,7 +268,10 @@ function checkForDamage(player, enemy) {
   if (collided(player, enemy)) {
     player.takeHit();
   }
-  if (healthBar.value === 0) {
+}
+
+function checkGameOver() {
+   if (healthBar.value === 0) {
     fill("black");
     textFont(gameOverFont);
     textSize(100);
@@ -307,4 +310,5 @@ function draw() {
   player.render();
   player.move();
   adjust();
+  checkGameOver();
 }
