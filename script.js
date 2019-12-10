@@ -40,13 +40,14 @@ class Player extends Sprite {
   }
 }
 
+
 class Enemy extends Sprite {
   constructor(x, y, speed) {
     super(x, y, 50);
     this.speed = speed;
   }
   render() {
-    image(enemySprite, this.x, this.y, 100, 100);
+    image(playerSprite, this.x, this.y, 100, 100);
   }
   move() {
     if (scarecrow.active) {
@@ -55,10 +56,30 @@ class Enemy extends Sprite {
       follow(this, player);
     }
   }
+  spawner() {
+    if (spawning) {
+    let enemySpeed = Math.random() * 2 + 2;
+    enemies.push(
+      new Enemy(...randomXYOffScreen(), enemySpeed),
+      new Enemy(...randomXYOffScreen(), enemySpeed),
+      new Enemy(...randomXYOffScreen(), enemySpeed)
+    );
+    spawning = false;
+    setTimeout(() => {
+      spawning = true;
+      wave += 1;
+    }, 10000);
+    waveNumber.textContent = wave;
+  }
+  }
 }
+
+
 
 class Scarecrow {
   constructor() {
+    this.color = "lightblue";
+    this.size = [100, 100];
     this.active = false;
     this.x;
     this.y;
@@ -74,17 +95,56 @@ class Scarecrow {
     image(scarecrowSprite, 0, 0);
     pop();
   }
+  used() {
+    if (timeout === false) {
+    scarecrow.active = true;
+    scarecrow.x = player.x;
+    scarecrow.y = player.y;
+    setTimeout(() => {
+      timeout = true;
+      scarecrow.active = false;
+      setTimeout(() => (timeout = false), scarecrow.cooldown);
+    }, scarecrow.time);
+  }
+  }
+  check() {
+    if (scarecrow.active) {
+    scarecrow.render();
+  }
+  }
 }
 
 class Powerup {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = [50,50];
+    this.size = 50;
     this.diameter = 50;
   }
   render() {
-    image(powerupSprite, this.x, this.y, ...this.size);
+    image(powerupSprite, this.x, this.y, this.size, this.size);
+  }
+  timer(){
+    if (millis() > startTimePowerup + deltaTimePowerup) {
+    if (collided(player, powerup)) {
+      startTimePowerup = millis();
+    }
+    drawPowerup = true;
+  }
+  }
+  giveHealth() {
+    if (drawPowerup) {
+    if (collided(player, powerup)) {
+      player.gainHealth();
+      powerup = new Powerup(...randomXYOnScreen());
+      drawPowerup = false;
+    }
+  }
+  }
+  activate() {
+ if (drawPowerup) {
+    powerup.render();
+  }
   }
 }
 
@@ -92,11 +152,33 @@ class Bomb {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = [65,65];
+    this.size = 65;
     this.diameter = 65;
   }
   render() {
-    image(bombSprite, this.x, this.y, ...this.size);
+    image(bombSprite, this.x, this.y, this.size, this.size);
+  }
+  timer() {
+    if (millis() > startTimeBomb + deltaTimeBomb) {
+    if (collided(player, bomb)) {
+      startTimeBomb = millis();
+    }
+    drawBomb = true;
+  }
+  }
+  removeEnemies() {
+    if (drawBomb) {
+    if (collided(player, bomb)) {
+      enemies.length = enemies.length - 3;
+      bomb = new Bomb(...randomXYOnScreen());
+      drawBomb = false;
+    }
+  }
+  }
+  activate() {
+    if (drawBomb) {
+    bomb.render();
+  }
   }
 }
 
@@ -111,7 +193,7 @@ let powerupSprite;
 let bombSprite;
 let backgroundTexture;
 let player = new Player();
-let enemies = [];
+let enemies = [new Enemy(...randomXYOffScreen(), Math.random() * 2 + 2)];
 let scarecrow = new Scarecrow();
 let scarecrowAngle = 0;
 let timeout = false;
@@ -130,50 +212,6 @@ let deltaTimeBomb = 20000;
 let drawPowerup = false;
 let drawBomb = false;
 
-function myTimerPowerup() {
-  if (millis() > startTimePowerup + deltaTimePowerup) {
-    if (collided(player, powerup)) {
-      startTimePowerup = millis();
-    }
-    drawPowerup = true;
-  }
-}
-
-function myTimerBomb() {
-  if (millis() > startTimeBomb + deltaTimeBomb) {
-    if (collided(player, bomb)) {
-      startTimeBomb = millis();
-    }
-    drawBomb = true;
-  }
-}
-
-function checkForGain() {
-  if (drawPowerup) {
-    if (collided(player, powerup)) {
-      player.gainHealth();
-      powerup = new Powerup(...randomXYOnScreen());
-      drawPowerup = false;
-    }
-  }
-}
-//I changed this--might be able to clean it up a bit, less if statements
-function checkForBomb() {
-  if (drawBomb) {
-    if (collided(player, bomb)) {
-      enemies.length = enemies.length - 3;
-      //if(enemies.length % 3 === 0) {
-      // enemies.length = enemies.length / 3;
-      //} else if (enemies.length % 3 ===1) {
-      // enemites.length=(enemies.length+2)/3
-      //  } else if (enemies.length % 3 ===2) {
-      //   enemies.length=(enemies.length+1)/3
-      // }
-      bomb = new Bomb(...randomXYOnScreen());
-      drawBomb = false;
-    }
-  }
-}
 
 function preload() {
   playerSprite = loadImage(
@@ -235,19 +273,6 @@ function setup() {
   startTimeBomb = millis();
 }
 
-function usedScarecrow() {
-  if (timeout === false) {
-    scarecrow.active = true;
-    scarecrow.x = player.x;
-    scarecrow.y = player.y;
-    setTimeout(() => {
-      timeout = true;
-      scarecrow.active = false;
-      setTimeout(() => (timeout = false), scarecrow.cooldown);
-    }, scarecrow.time);
-  }
-}
-
 function keyReleased() {
   if (keyCode === 32 && !scarecrow.active) {
     usedScarecrow();
@@ -270,23 +295,6 @@ function randomXYOffScreen() {
   let randX = possibleX[Math.floor(Math.random() * 2)];
   let randY = possibleY[Math.floor(Math.random() * 2)];
   return [randX, randY];
-}
-//I changed this as well, instead of wave*3, it adds 3 ones each time. bomb made this complicated.
-function spawner() {
-  if (spawning) {
-    let enemySpeed = Math.random() * 2 + 2;
-    enemies.push(
-      new Enemy(...randomXYOffScreen(), enemySpeed),
-      new Enemy(...randomXYOffScreen(), enemySpeed),
-      new Enemy(...randomXYOffScreen(), enemySpeed)
-    );
-    spawning = false;
-    setTimeout(() => {
-      spawning = true;
-      wave += 1;
-    }, 10000);
-    waveNumber.textContent = wave;
-  }
 }
 
 function follow(follower, leader) {
@@ -349,19 +357,14 @@ function checkForDamage(player, enemy) {
 }
 
 function doEnemyBehavior() {
-  spawner();
   enemies.forEach(enemy => {
+    enemy.spawner();
     enemy.render();
     enemy.move();
     checkForDamage(player, enemy);
   });
 }
 
-function checkScarecrow() {
-  if (scarecrow.active) {
-    scarecrow.render();
-  }
-}
 
 function drawBackground() {
   push();
@@ -381,30 +384,18 @@ function checkGameOver() {
   }
 }
 
-function activatePowerup() {
-  if (drawPowerup) {
-    powerup.render();
-  }
-}
-
-function activateBomb() {
-  if (drawBomb) {
-    bomb.render();
-  }
-}
-
 function draw() {
   drawBackground();
-  checkScarecrow();
+  scarecrow.check();
   doEnemyBehavior();
-  checkForGain();
-  checkForBomb();
+  powerup.giveHealth();
+  bomb.removeEnemies();
   player.render();
   player.move();
   adjust();
-  activatePowerup();
-  activateBomb();
-  myTimerPowerup();
-  myTimerBomb();
+  powerup.activate();
+  bomb.activate();
+  powerup.timer();
+  bomb.timer();
   checkGameOver();
 }
