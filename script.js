@@ -90,11 +90,11 @@ class Powerup {
 }
 
 class Bomb {
-  constructor(x,y) {
+  constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = 80;
-    this.diameter = 80;
+    this.size = 65;
+    this.diameter = 65;
   }
   render() {
     image(bombSprite, this.x, this.y, this.size, this.size);
@@ -108,6 +108,8 @@ const height = 600;
 let playerSprite;
 let enemySprite;
 let scarecrowSprite;
+let powerupSprite;
+let bombSprite;
 let backgroundTexture;
 let player = new Player();
 let enemies = [];
@@ -121,16 +123,29 @@ let hitSound;
 let gameOverSound;
 let gameOverFont;
 let powerup = new Powerup(...randomXYOnScreen());
-let startTime;
-let deltaTime = 5000;
+let bomb = new Bomb(...randomXYOnScreen());
+let startTimePowerup;
+let startTimeBomb;
+let deltaTimePowerup = 10000;
+let deltaTimeBomb = 15000;
 let drawPowerup = false;
+let drawBomb = false;
 
-function myTimer() {
-  if (millis() > startTime + deltaTime) {
+function myTimerPowerup() {
+  if (millis() > startTimePowerup + deltaTimePowerup) {
     if (collided(player, powerup)) {
-      startTime = millis();
+      startTimePowerup = millis();
     }
     drawPowerup = true;
+  }
+}
+
+function myTimerBomb() {
+  if (millis() > startTimeBomb + deltaTimeBomb) {
+    if (collided(player, bomb)) {
+      startTimeBomb = millis();
+    }
+    drawBomb = true;
   }
 }
 
@@ -140,6 +155,16 @@ function checkForGain() {
       player.gainHealth();
       powerup = new Powerup(...randomXYOnScreen());
       drawPowerup = false;
+    }
+  }
+}
+
+function checkForBomb() {
+  if (drawBomb) {
+    if (collided(player, bomb)) {
+      enemies.length = enemies.length / 3;
+      bomb = new Bomb(...randomXYOnScreen());
+      drawBomb = false;
     }
   }
 }
@@ -200,7 +225,8 @@ function setup() {
   angleMode(DEGREES);
   hitSound.setVolume(1);
   hitSound.playMode("untilDone");
-  startTime = millis();
+  startTimePowerup = millis();
+  startTimeBomb = millis();
 }
 
 function usedScarecrow() {
@@ -353,15 +379,24 @@ function activatePowerup() {
   }
 }
 
+function activateBomb() {
+  if (drawBomb) {
+    bomb.render();
+  }
+}
+
 function draw() {
   drawBackground();
   checkScarecrow();
   doEnemyBehavior();
   checkForGain();
+  checkForBomb();
   player.render();
   player.move();
   adjust();
   activatePowerup();
-  myTimer();
+  activateBomb();
+  myTimerPowerup();
+  myTimerBomb();
   checkGameOver();
 }
