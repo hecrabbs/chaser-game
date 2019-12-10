@@ -127,7 +127,7 @@ let bomb = new Bomb(...randomXYOnScreen());
 let startTimePowerup;
 let startTimeBomb;
 let deltaTimePowerup = 10000;
-let deltaTimeBomb = 15000;
+let deltaTimeBomb = 20000;
 let drawPowerup = false;
 let drawBomb = false;
 
@@ -158,11 +158,18 @@ function checkForGain() {
     }
   }
 }
-
+//I changed this--might be able to clean it up a bit, less if statements
 function checkForBomb() {
   if (drawBomb) {
     if (collided(player, bomb)) {
-      enemies.length = enemies.length / 3;
+      enemies.length = enemies.length - 3;
+      //if(enemies.length % 3 === 0) {
+      // enemies.length = enemies.length / 3;
+      //} else if (enemies.length % 3 ===1) {
+      // enemites.length=(enemies.length+2)/3
+      //  } else if (enemies.length % 3 ===2) {
+      //   enemies.length=(enemies.length+1)/3
+      // }
       bomb = new Bomb(...randomXYOnScreen());
       drawBomb = false;
     }
@@ -265,13 +272,15 @@ function randomXYOffScreen() {
   let randY = possibleY[Math.floor(Math.random() * 2)];
   return [randX, randY];
 }
-
+//I changed this as well, instead of wave*3, it adds 3 ones each time. bomb made this complicated.
 function spawner() {
   if (spawning) {
     let enemySpeed = Math.random() * 2 + 2;
-    while (enemies.length < wave * 3) {
-      enemies.push(new Enemy(...randomXYOffScreen(), enemySpeed));
-    }
+    enemies.push(
+      new Enemy(...randomXYOffScreen(), enemySpeed),
+      new Enemy(...randomXYOffScreen(), enemySpeed),
+      new Enemy(...randomXYOffScreen(), enemySpeed)
+    );
     spawning = false;
     setTimeout(() => {
       spawning = true;
