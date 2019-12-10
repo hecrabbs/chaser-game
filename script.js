@@ -97,22 +97,23 @@ class Scarecrow {
   }
   used() {
     if (timeout === false) {
-    scarecrow.active = true;
-    scarecrow.x = player.x;
-    scarecrow.y = player.y;
-    setTimeout(() => {
-      timeout = true;
-      scarecrow.active = false;
-      setTimeout(() => (timeout = false), scarecrow.cooldown);
-    }, scarecrow.time);
-  }
+      scarecrow.active = true;
+      scarecrow.x = player.x;
+      scarecrow.y = player.y;
+      setTimeout(() => {
+        timeout = true;
+        scarecrow.active = false;
+        setTimeout(() => (timeout = false), scarecrow.cooldown);
+      }, scarecrow.time);
+    }
   }
   check() {
     if (scarecrow.active) {
-    scarecrow.render();
-  }
+      scarecrow.render();
+    }
   }
 }
+
 
 class Powerup {
   constructor(x, y) {
