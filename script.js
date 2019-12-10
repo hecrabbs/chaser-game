@@ -75,15 +75,23 @@ class Scarecrow {
 
 class PowerUp {
   constructor(x, y) {
-    this.color = "yellow";
-    this.size = 10;
-    this.active = false;
     this.x = x;
     this.y = y;
+    this.size = 50;
   }
   render() {
-    fill(this.color);
-    circle(this.x, this.y, this.size);
+    image(powerupSprite, this.x, this.y, this.size, this.size);
+  }
+}
+
+class Bomb {
+  constructor(x,y) {
+    this.x = x;
+    this.y = y;
+    this.size = 80;
+  }
+  render() {
+    image(bombSprite, this.x, this.y, this.size, this.size);
   }
 }
 
@@ -119,6 +127,12 @@ function preload() {
   );
   scarecrowSprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/hole.png"
+  );
+  powerupSprite = loadImage(
+    "https://hecrabbs.github.io/chaser-game/Assets/powerup.png"
+  );
+  bombSprite = loadImage(
+    "https://hecrabbs.github.io/chaser-game/Assets/bomb.png"
   );
   soundFormats("mp3");
   hitSound = loadSound(
