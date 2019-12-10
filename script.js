@@ -33,7 +33,7 @@ class Player extends Sprite {
     hitSound.play(0, 3);
     healthBar.value = this.health;
   }
-   gainHealth() {
+  gainHealth() {
     this.health += 10;
     healthBar.value = this.health;
   }
@@ -77,26 +77,17 @@ class Scarecrow {
   }
 }
 
-class PowerUp {
+class Powerup {
   constructor(x, y) {
+    this.color = "yellow";
+    this.size = 50;
     this.x = x;
     this.y = y;
-    this.size = 50;
     this.diameter = 50;
   }
   render() {
-    image(powerupSprite, this.x, this.y, this.size, this.size);
-  }
-}
-
-class Bomb {
-  constructor(x,y) {
-    this.x = x;
-    this.y = y;
-    this.size = 80;
-  }
-  render() {
-    image(bombSprite, this.x, this.y, this.size, this.size);
+    fill(this.color);
+    circle(this.x, this.y, this.size);
   }
 }
 
@@ -121,8 +112,27 @@ let gameOverSound;
 let gameOverFont;
 let powerup = new Powerup(...randomXYOnScreen());
 let startTime;
-let deltaTime=5000;
+let deltaTime = 5000;
 let drawPowerup = false;
+
+function myTimer() {
+  if (millis() > startTime + deltaTime) {
+    if (collided(player, powerup)) {
+      startTime = millis();
+    }
+    drawPowerup = true;
+  }
+}
+
+function checkForGain() {
+  if (drawPowerup) {
+    if (collided(player, powerup)) {
+      player.gainHealth();
+      powerup = new Powerup(...randomXYOnScreen());
+      drawPowerup = false;
+    }
+  }
+}
 
 function preload() {
   playerSprite = loadImage(
@@ -136,12 +146,6 @@ function preload() {
   );
   scarecrowSprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/hole.png"
-  );
-  powerupSprite = loadImage(
-    "https://hecrabbs.github.io/chaser-game/Assets/powerup.png"
-  );
-  bombSprite = loadImage(
-    "https://hecrabbs.github.io/chaser-game/Assets/bomb.png"
   );
   soundFormats("mp3");
   hitSound = loadSound(
@@ -181,25 +185,6 @@ function setup() {
   hitSound.setVolume(1);
   hitSound.playMode("untilDone");
   startTime = millis();
-}
-
-function myTimer() {
-  if (millis() > startTime + deltaTime) {
-    if (collided(player, powerup)) {
-      startTime = millis();
-    }
-    drawPowerup = true;
-  }
-}
-
-function checkForGain() {
-  if (drawPowerup) {
-    if (collided(player, powerup)) {
-      player.gainHealth();
-      powerup = new Powerup(...randomXYOnScreen());
-      drawPowerup = false;
-    }
-  }
 }
 
 function usedScarecrow() {
@@ -311,6 +296,14 @@ function checkForDamage(player, enemy) {
   if (collided(player, enemy)) {
     player.takeHit();
   }
+  if (healthBar.value === 0) {
+    fill("black");
+    textFont(gameOverFont);
+    textSize(100);
+    text("GAME OVER", width / 2, height / 2);
+    gameOverSound.play(0, 1.5);
+    noLoop();
+  }
 }
 
 function doEnemyBehavior() {
@@ -328,24 +321,17 @@ function checkScarecrow() {
   }
 }
 
-function checkGameOver() {
-   if (healthBar.value === 0) {
-    fill("black");
-    textFont(gameOverFont);
-    textSize(100);
-    text("GAME OVER", width / 2, height / 2);
-    gameOverSound.play(0, 1.5);
-    noLoop();
-  }
-}
-
 function drawBackground() {
   push();
   imageMode(CORNER);
   background(backgroundTexture);
   pop();
 }
-
+function activatePowerup() {
+  if (drawPowerup) {
+    powerup.render();
+  }
+}
 function draw() {
   drawBackground();
   checkScarecrow();
@@ -356,5 +342,17 @@ function draw() {
   adjust();
   activatePowerup();
   myTimer();
-  checkGameOver();
 }
+
+//make separate game over function so enemies dont render on top of game over text
+//make health powerup
+//make bomb powerup
+//fix game over volume
+//add scarecrow sound
+//add powerup sound
+//add bomb sound
+//change player image
+//add powerup image
+//add bomb image
+//fix scarecrow image?
+//change the way waves work?
