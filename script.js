@@ -276,7 +276,7 @@ function setup() {
 
 function keyReleased() {
   if (keyCode === 32 && !scarecrow.active) {
-    usedScarecrow();
+    scarecrow.used();
   }
 }
 
