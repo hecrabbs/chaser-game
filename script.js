@@ -1,8 +1,6 @@
 class Sprite {
   constructor(x, y, diameter) {
-    this.x = x;
-    this.y = y;
-    this.diameter = diameter;
+    Object.assign(this,{x,y,diameter});
     this.radius = diameter / 2;
   }
 }
@@ -37,6 +35,9 @@ class Player extends Sprite {
     this.health += 10;
     healthBar.value = this.health;
   }
+  isDead(){
+    return this.health === 0;
+  }
 }
 
 class Enemy extends Sprite {
@@ -45,7 +46,7 @@ class Enemy extends Sprite {
     this.speed = speed;
   }
   render() {
-    image(playerSprite, this.x, this.y, 100, 100);
+    image(enemySprite, this.x, this.y, 100, 100);
   }
   move() {
     if (scarecrow.active) {
@@ -58,8 +59,6 @@ class Enemy extends Sprite {
 
 class Scarecrow {
   constructor() {
-    this.color = "lightblue";
-    this.size = [100, 100];
     this.active = false;
     this.x;
     this.y;
@@ -81,11 +80,11 @@ class Powerup {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = 50;
+    this.size = [50,50];
     this.diameter = 50;
   }
   render() {
-    image(powerupSprite, this.x, this.y, this.size, this.size);
+    image(powerupSprite, this.x, this.y, ...this.size);
   }
 }
 
@@ -93,11 +92,11 @@ class Bomb {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = 65;
+    this.size = [65,65];
     this.diameter = 65;
   }
   render() {
-    image(bombSprite, this.x, this.y, this.size, this.size);
+    image(bombSprite, this.x, this.y, ...this.size);
   }
 }
 
@@ -178,7 +177,7 @@ function checkForBomb() {
 
 function preload() {
   playerSprite = loadImage(
-    "https://hecrabbs.github.io/chaser-game/Assets/Toal.png"
+    "https://hecrabbs.github.io/chaser-game/Assets/playerSprite.png"
   );
   enemySprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/Toal.png"
