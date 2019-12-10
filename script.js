@@ -79,15 +79,25 @@ class Scarecrow {
 
 class Powerup {
   constructor(x, y) {
-    this.color = "yellow";
-    this.size = 50;
     this.x = x;
     this.y = y;
+    this.size = 50;
     this.diameter = 50;
   }
   render() {
-    fill(this.color);
-    circle(this.x, this.y, this.size);
+    image(powerupSprite, this.x, this.y, this.size, this.size);
+  }
+}
+
+class Bomb {
+  constructor(x,y) {
+    this.x = x;
+    this.y = y;
+    this.size = 80;
+    this.diameter = 80;
+  }
+  render() {
+    image(bombSprite, this.x, this.y, this.size, this.size);
   }
 }
 
@@ -146,6 +156,12 @@ function preload() {
   );
   scarecrowSprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/hole.png"
+  );
+  powerupSprite = loadImage(
+    "https://hecrabbs.github.io/chaser-game/Assets/powerup.png"
+  );
+  bombSprite = loadImage(
+    "https://hecrabbs.github.io/chaser-game/Assets/bomb.png"
   );
   soundFormats("mp3");
   hitSound = loadSound(
@@ -296,14 +312,6 @@ function checkForDamage(player, enemy) {
   if (collided(player, enemy)) {
     player.takeHit();
   }
-  if (healthBar.value === 0) {
-    fill("black");
-    textFont(gameOverFont);
-    textSize(100);
-    text("GAME OVER", width / 2, height / 2);
-    gameOverSound.play(0, 1.5);
-    noLoop();
-  }
 }
 
 function doEnemyBehavior() {
@@ -327,11 +335,24 @@ function drawBackground() {
   background(backgroundTexture);
   pop();
 }
+
+function checkGameOver() {
+  if (healthBar.value === 0) {
+    fill("black");
+    textFont(gameOverFont);
+    textSize(100);
+    text("GAME OVER", width / 2, height / 2);
+    gameOverSound.play(0, 1.5);
+    noLoop();
+  }
+}
+
 function activatePowerup() {
   if (drawPowerup) {
     powerup.render();
   }
 }
+
 function draw() {
   drawBackground();
   checkScarecrow();
@@ -342,17 +363,5 @@ function draw() {
   adjust();
   activatePowerup();
   myTimer();
+  checkGameOver();
 }
-
-//make separate game over function so enemies dont render on top of game over text
-//make health powerup
-//make bomb powerup
-//fix game over volume
-//add scarecrow sound
-//add powerup sound
-//add bomb sound
-//change player image
-//add powerup image
-//add bomb image
-//fix scarecrow image?
-//change the way waves work?
