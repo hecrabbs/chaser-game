@@ -33,6 +33,10 @@ class Player extends Sprite {
     hitSound.play(0, 3);
     healthBar.value = this.health;
   }
+   gainHealth() {
+    this.health += 10;
+    healthBar.value = this.health;
+  }
 }
 
 class Enemy extends Sprite {
@@ -78,6 +82,7 @@ class PowerUp {
     this.x = x;
     this.y = y;
     this.size = 50;
+    this.diameter = 50;
   }
   render() {
     image(powerupSprite, this.x, this.y, this.size, this.size);
@@ -114,6 +119,10 @@ let paused = false;
 let hitSound;
 let gameOverSound;
 let gameOverFont;
+let powerup = new Powerup(...randomXYOnScreen());
+let startTime;
+let deltaTime=5000;
+let drawPowerup = false;
 
 function preload() {
   playerSprite = loadImage(
@@ -171,6 +180,26 @@ function setup() {
   angleMode(DEGREES);
   hitSound.setVolume(1);
   hitSound.playMode("untilDone");
+  startTime = millis();
+}
+
+function myTimer() {
+  if (millis() > startTime + deltaTime) {
+    if (collided(player, powerup)) {
+      startTime = millis();
+    }
+    drawPowerup = true;
+  }
+}
+
+function checkForGain() {
+  if (drawPowerup) {
+    if (collided(player, powerup)) {
+      player.gainHealth();
+      powerup = new Powerup(...randomXYOnScreen());
+      drawPowerup = false;
+    }
+  }
 }
 
 function usedScarecrow() {
@@ -321,8 +350,11 @@ function draw() {
   drawBackground();
   checkScarecrow();
   doEnemyBehavior();
+  checkForGain();
   player.render();
   player.move();
   adjust();
+  activatePowerup();
+  myTimer();
   checkGameOver();
 }
