@@ -270,17 +270,6 @@ function checkForDamage(player, enemy) {
   }
 }
 
-function checkGameOver() {
-   if (healthBar.value === 0) {
-    fill("black");
-    textFont(gameOverFont);
-    textSize(100);
-    text("GAME OVER", width / 2, height / 2);
-    gameOverSound.play(0, 1.5);
-    noLoop();
-  }
-}
-
 function doEnemyBehavior() {
   spawner();
   enemies.forEach(enemy => {
@@ -293,6 +282,17 @@ function doEnemyBehavior() {
 function checkScarecrow() {
   if (scarecrow.active) {
     scarecrow.render();
+  }
+}
+
+function checkGameOver() {
+   if (healthBar.value === 0) {
+    fill("black");
+    textFont(gameOverFont);
+    textSize(100);
+    text("GAME OVER", width / 2, height / 2);
+    gameOverSound.play(0, 1.5);
+    noLoop();
   }
 }
 
