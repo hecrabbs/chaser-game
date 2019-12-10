@@ -45,7 +45,7 @@ class Enemy extends Sprite {
     this.speed = speed;
   }
   render() {
-    image(playerSprite, this.x, this.y, 100, 100);
+    image(enemySprite, this.x, this.y, 100, 100);
   }
   move() {
     if (scarecrow.active) {
