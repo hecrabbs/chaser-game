@@ -1,8 +1,7 @@
 class Sprite {
-  constructor(x, y, color, diameter) {
+  constructor(x, y, diameter) {
     this.x = x;
     this.y = y;
-    this.color = color;
     this.diameter = diameter;
     this.radius = diameter / 2;
   }
@@ -10,7 +9,7 @@ class Sprite {
 
 class Player extends Sprite {
   constructor() {
-    super(width / 2, height / 2, "pink", 30);
+    super(width / 2, height / 2, 30);
     this.health = 100;
     this.speed = 5;
   }
@@ -38,7 +37,7 @@ class Player extends Sprite {
 
 class Enemy extends Sprite {
   constructor(x, y, speed) {
-    super(x, y, "rgba(200,0,80,0.5)", 50);
+    super(x, y, 50);
     this.speed = speed;
   }
   render() {
@@ -64,18 +63,23 @@ class Scarecrow {
     this.time = 5000;
   }
   render() {
-    fill(this.color);
-    rect(this.x, this.y, ...this.size);
+    push();
+    scarecrowAngle += 5;
+    translate(this.x, this.y);
+    scale(0.75);
+    rotate(scarecrowAngle);
+    image(scarecrowSprite, 0, 0);
+    pop();
   }
 }
 
 class PowerUp {
-  constructor() {
+  constructor(x, y) {
     this.color = "yellow";
     this.size = 10;
     this.active = false;
-    this.x;
-    this.y;
+    this.x = x;
+    this.y = y;
   }
   render() {
     fill(this.color);
@@ -85,14 +89,16 @@ class PowerUp {
 
 const healthBar = document.querySelector("progress");
 const waveNumber = document.querySelector("#wave");
-let width = 800;
-let height = 600;
+const width = 800;
+const height = 600;
 let playerSprite;
 let enemySprite;
 let scarecrowSprite;
+let backgroundTexture;
 let player = new Player();
 let enemies = [];
 let scarecrow = new Scarecrow();
+let scarecrowAngle = 0;
 let timeout = false;
 let wave = 1;
 let spawning = true;
@@ -107,6 +113,12 @@ function preload() {
   );
   enemySprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/Toal.png"
+  );
+  backgroundTexture = loadImage(
+    "https://hecrabbs.github.io/chaser-game/Assets/grass.png"
+  );
+  scarecrowSprite = loadImage(
+    "https://hecrabbs.github.io/chaser-game/Assets/hole.png"
   );
   soundFormats("mp3");
   hitSound = loadSound(
@@ -142,6 +154,7 @@ function setup() {
   imageMode(CENTER);
   rectMode(CENTER);
   textAlign(CENTER);
+  angleMode(DEGREES);
   hitSound.setVolume(1);
   hitSound.playMode("untilDone");
 }
@@ -280,11 +293,18 @@ function checkScarecrow() {
   }
 }
 
+function drawBackground() {
+  push();
+  imageMode(CORNER);
+  background(backgroundTexture);
+  pop();
+}
+
 function draw() {
-  background("lightgreen");
+  drawBackground();
+  checkScarecrow();
+  doEnemyBehavior();
   player.render();
   player.move();
-  doEnemyBehavior();
   adjust();
-  checkScarecrow();
 }
