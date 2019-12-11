@@ -134,6 +134,7 @@ class Powerup extends Items {
     if (drawPowerup) {
       if (collided(player, powerup)) {
         player.gainHealth();
+        powerupSound.play(0, 3);
         powerup = new Powerup(...randomXYOnScreen());
         drawPowerup = false;
       }
@@ -165,6 +166,7 @@ class Bomb extends Items {
     if (drawBomb) {
       if (collided(player, bomb)) {
         enemies.length = enemies.length - 3;
+        bombSound.play(0, 3);
         bomb = new Bomb(...randomXYOnScreen());
         drawBomb = false;
       }
@@ -214,6 +216,12 @@ function preload() {
   gameOverSound = loadSound(
     "https://hecrabbs.github.io/chaser-game/Assets/gameOverSound.mp3"
   );
+  powerupSound = loadSound(
+      "https://hecrabbs.github.io/chaser-game/Assets/powerupSound.mp3"
+  );
+  bombSound = loadSound(
+      "https://hecrabbs.github.io/chaser-game/Assets/bombSound.mp3"
+  )
   playerSprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/playerSprite.png"
   );
@@ -263,6 +271,8 @@ function setup() {
   hitSound.setVolume(1);
   hitSound.playMode("untilDone");
   gameOverSound.setVolume(1);
+  powerupSound.setVolume(1);
+  bombSound.setVolume(1)
   startTimePowerup = millis();
   startTimeBomb = millis();
 }
