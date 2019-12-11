@@ -1,15 +1,14 @@
 class Sprite {
-  constructor(x, y, diameter) {
-    Object.assign(this,{x,y,diameter});
+  constructor(x, y, diameter, speed) {
+    Object.assign(this, { x, y, diameter, speed });
     this.radius = diameter / 2;
   }
 }
 
 class Player extends Sprite {
   constructor() {
-    super(width / 2, height / 2, 30);
+    super(width / 2, height / 2, 30, 5);
     this.health = 100;
-    this.speed = 5;
   }
   render() {
     image(playerSprite, this.x, this.y, 100, 100);
@@ -35,16 +34,14 @@ class Player extends Sprite {
     this.health += 10;
     healthBar.value = this.health;
   }
-  isDead(){
-    return this.health === 0;
+  isDead() {
+    return this.health <= 0;
   }
 }
 
-
 class Enemy extends Sprite {
   constructor(x, y, speed) {
-    super(x, y, 50);
-    this.speed = speed;
+    super(x, y, 50, speed);
   }
   render() {
     image(enemySprite, this.x, this.y, 100, 100);
@@ -58,23 +55,21 @@ class Enemy extends Sprite {
   }
   spawner() {
     if (spawning) {
-    let enemySpeed = Math.random() * 2 + 2;
-    enemies.push(
-      new Enemy(...randomXYOffScreen(), enemySpeed),
-      new Enemy(...randomXYOffScreen(), enemySpeed),
-      new Enemy(...randomXYOffScreen(), enemySpeed)
-    );
-    spawning = false;
-    setTimeout(() => {
-      spawning = true;
-      wave += 1;
-    }, 10000);
-    waveNumber.textContent = wave;
-  }
+      let enemySpeed = Math.random() * 2 + 2;
+      enemies.push(
+        new Enemy(...randomXYOffScreen(), enemySpeed),
+        new Enemy(...randomXYOffScreen(), enemySpeed),
+        new Enemy(...randomXYOffScreen(), enemySpeed)
+      );
+      spawning = false;
+      setTimeout(() => {
+        spawning = true;
+        wave += 1;
+      }, 10000);
+      waveNumber.textContent = wave;
+    }
   }
 }
-
-
 
 class Scarecrow {
   constructor() {
@@ -83,6 +78,7 @@ class Scarecrow {
     this.active = false;
     this.x;
     this.y;
+    this.timeout = false;
     this.cooldown = 10000;
     this.time = 5000;
   }
@@ -96,14 +92,14 @@ class Scarecrow {
     pop();
   }
   used() {
-    if (timeout === false) {
+    if (this.timeout === false) {
       scarecrow.active = true;
       scarecrow.x = player.x;
       scarecrow.y = player.y;
       setTimeout(() => {
-        timeout = true;
+        this.timeout = true;
         scarecrow.active = false;
-        setTimeout(() => (timeout = false), scarecrow.cooldown);
+        setTimeout(() => (this.timeout = false), scarecrow.cooldown);
       }, scarecrow.time);
     }
   }
@@ -114,72 +110,70 @@ class Scarecrow {
   }
 }
 
-
-class Powerup {
+class Items {
+  constructor(x, y, size, diameter) {
+    Object.assign(this, { x, y, size, diameter });
+  }
+}
+class Powerup extends Items {
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.size = 50;
-    this.diameter = 50;
+    super(x, y, [50, 50], 50);
   }
   render() {
-    image(powerupSprite, this.x, this.y, this.size, this.size);
+    image(powerupSprite, this.x, this.y, ...this.size);
   }
-  timer(){
+  timer() {
     if (millis() > startTimePowerup + deltaTimePowerup) {
-    if (collided(player, powerup)) {
-      startTimePowerup = millis();
+      if (collided(player, powerup)) {
+        startTimePowerup = millis();
+      }
+      drawPowerup = true;
     }
-    drawPowerup = true;
-  }
   }
   giveHealth() {
     if (drawPowerup) {
-    if (collided(player, powerup)) {
-      player.gainHealth();
-      powerup = new Powerup(...randomXYOnScreen());
-      drawPowerup = false;
+      if (collided(player, powerup)) {
+        player.gainHealth();
+        powerup = new Powerup(...randomXYOnScreen());
+        drawPowerup = false;
+      }
     }
   }
-  }
   activate() {
- if (drawPowerup) {
-    powerup.render();
-  }
+    if (drawPowerup) {
+      powerup.render();
+    }
   }
 }
 
-class Bomb {
+class Bomb extends Items {
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.size = 65;
-    this.diameter = 65;
+    super(x, y, [65, 65], 65);
   }
   render() {
-    image(bombSprite, this.x, this.y, this.size, this.size);
+    image(bombSprite, this.x, this.y, ...this.size);
   }
   timer() {
     if (millis() > startTimeBomb + deltaTimeBomb) {
-    if (collided(player, bomb)) {
-      startTimeBomb = millis();
+      if (collided(player, bomb)) {
+        startTimeBomb = millis();
+      }
+      drawBomb = true;
     }
-    drawBomb = true;
-  }
   }
   removeEnemies() {
     if (drawBomb) {
-    if (collided(player, bomb)) {
-      enemies.length = enemies.length - 3;
-      bomb = new Bomb(...randomXYOnScreen());
-      drawBomb = false;
+      if (collided(player, bomb)) {
+        enemies.length = enemies.length - 3;
+        bomb = new Bomb(...randomXYOnScreen());
+        drawBomb = false;
+      }
     }
-  }
   }
   activate() {
     if (drawBomb) {
-    bomb.render();
-  }
+      bomb.render();
+    }
   }
 }
 
@@ -197,7 +191,6 @@ let player = new Player();
 let enemies = [new Enemy(...randomXYOffScreen(), Math.random() * 2 + 2)];
 let scarecrow = new Scarecrow();
 let scarecrowAngle = 0;
-let timeout = false;
 let wave = 1;
 let spawning = true;
 let paused = false;
@@ -213,8 +206,14 @@ let deltaTimeBomb = 20000;
 let drawPowerup = false;
 let drawBomb = false;
 
-
 function preload() {
+  soundFormats("mp3");
+  hitSound = loadSound(
+    "https://hecrabbs.github.io/chaser-game/Assets/hitSound.mp3"
+  );
+  gameOverSound = loadSound(
+    "https://hecrabbs.github.io/chaser-game/Assets/gameOverSound.mp3"
+  );
   playerSprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/playerSprite.png"
   );
@@ -232,13 +231,6 @@ function preload() {
   );
   bombSprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/bomb.png"
-  );
-  soundFormats("mp3");
-  hitSound = loadSound(
-    "https://hecrabbs.github.io/chaser-game/Assets/hitSound.mp3"
-  );
-  gameOverSound = loadSound(
-    "https://hecrabbs.github.io/chaser-game/Assets/gameOverSound.mp3"
   );
   gameOverFont = loadFont(
     "https://hecrabbs.github.io/chaser-game/Assets/game_over.ttf"
@@ -270,6 +262,7 @@ function setup() {
   angleMode(DEGREES);
   hitSound.setVolume(1);
   hitSound.playMode("untilDone");
+  gameOverSound.setVolume(1);
   startTimePowerup = millis();
   startTimeBomb = millis();
 }
@@ -366,7 +359,6 @@ function doEnemyBehavior() {
   });
 }
 
-
 function drawBackground() {
   push();
   imageMode(CORNER);
@@ -375,13 +367,13 @@ function drawBackground() {
 }
 
 function checkGameOver() {
-  if (healthBar.value === 0) {
+  if (player.isDead()) {
     fill("black");
     textFont(gameOverFont);
-    textSize(100);
+    textSize(140);
     text("GAME OVER", width / 2, height / 2);
-    gameOverSound.play(0, 1.5);
     noLoop();
+    gameOverSound.play(0, 1.3);
   }
 }
 
