@@ -198,6 +198,8 @@ let spawning = true;
 let paused = false;
 let hitSound;
 let gameOverSound;
+let powerupSound;
+let bombSound;
 let gameOverFont;
 let powerup = new Powerup(...randomXYOnScreen());
 let bomb = new Bomb(...randomXYOnScreen());
