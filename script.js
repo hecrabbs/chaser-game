@@ -17,7 +17,7 @@ class Player extends Sprite {
     if (keyIsDown(68) && this.x < width - this.diameter / 2) {
       this.x += this.speed;
     } else if (keyIsDown(65) && this.x > 0 + this.diameter / 2) {
-      this.x -= player.speed;
+      this.x -= this.speed;
     }
     if (keyIsDown(87) && this.y > 0 + this.diameter / 2) {
       this.y -= this.speed;
