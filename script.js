@@ -37,6 +37,10 @@ class Player extends Sprite {
   isDead() {
     return this.health <= 0;
   }
+  revive() {
+    this.health = 100;
+    healthBar.value = this.health;
+  }
 }
 
 class Enemy extends Sprite {
@@ -53,6 +57,12 @@ class Enemy extends Sprite {
       follow(this, player);
     }
   }
+  timer() {
+    if (millis() > startTimeEnemy + deltaTimeEnemy) {
+      spawning = true;
+      wave += 1;
+    }
+  }
   spawner() {
     if (spawning) {
       let enemySpeed = Math.random() * 2 + 2;
@@ -62,12 +72,9 @@ class Enemy extends Sprite {
         new Enemy(...randomXYOffScreen(), enemySpeed)
       );
       spawning = false;
-      setTimeout(() => {
-        spawning = true;
-        wave += 1;
-      }, 10000);
-      waveNumber.textContent = wave;
+      startTimeEnemy = millis();
     }
+    waveNumber.textContent = wave;
   }
 }
 
@@ -205,6 +212,8 @@ let powerup = new Powerup(...randomXYOnScreen());
 let bomb = new Bomb(...randomXYOnScreen());
 let startTimePowerup;
 let startTimeBomb;
+let startTimeEnemy;
+let deltaTimeEnemy = 10000;
 let deltaTimePowerup = 10000;
 let deltaTimeBomb = 20000;
 let drawPowerup = false;
@@ -219,11 +228,11 @@ function preload() {
     "https://hecrabbs.github.io/chaser-game/Assets/gameOverSound.mp3"
   );
   powerupSound = loadSound(
-      "https://hecrabbs.github.io/chaser-game/Assets/powerupSound.mp3"
+    "https://hecrabbs.github.io/chaser-game/Assets/powerupSound.mp3"
   );
   bombSound = loadSound(
-      "https://hecrabbs.github.io/chaser-game/Assets/bombSound.mp3"
-  )
+    "https://hecrabbs.github.io/chaser-game/Assets/bombSound.mp3"
+  );
   playerSprite = loadImage(
     "https://hecrabbs.github.io/chaser-game/Assets/playerSprite.png"
   );
@@ -274,7 +283,7 @@ function setup() {
   hitSound.playMode("untilDone");
   gameOverSound.setVolume(1);
   powerupSound.setVolume(1);
-  bombSound.setVolume(1)
+  bombSound.setVolume(1);
   startTimePowerup = millis();
   startTimeBomb = millis();
 }
@@ -323,17 +332,17 @@ function collided(sprite1, sprite2) {
   return distanceBetween <= sumOfRadii;
 }
 
-function pushOff(c1, c2) {
-  let [dx, dy] = [c2.x - c1.x, c2.y - c1.y];
+function pushOff(s1, s2) {
+  let [dx, dy] = [s2.x - s1.x, s2.y - s1.y];
   const distance = Math.hypot(dx, dy);
-  let overlap = c1.radius + c2.radius - distance;
+  let overlap = s1.radius + s2.radius - distance;
   if (overlap > 0) {
     const adjustX = overlap / 2 * (dx / distance);
     const adjustY = overlap / 2 * (dy / distance);
-    c1.x -= adjustX;
-    c1.y -= adjustY;
-    c2.x += adjustX;
-    c2.y += adjustY;
+    s1.x -= adjustX;
+    s1.y -= adjustY;
+    s2.x += adjustX;
+    s2.y += adjustY;
   }
 }
 
@@ -367,6 +376,7 @@ function doEnemyBehavior() {
     enemy.spawner();
     enemy.render();
     enemy.move();
+    enemy.timer();
     checkForDamage(player, enemy);
   });
 }
@@ -384,8 +394,29 @@ function checkGameOver() {
     textFont(gameOverFont);
     textSize(140);
     text("GAME OVER", width / 2, height / 2);
+    textSize(60);
+    text("CLICK MOUSE TO PLAY AGAIN", width / 2, height / 2 + 50);
     noLoop();
     gameOverSound.play(0, 1.3);
+  }
+}
+
+function mouseClicked() {
+  if (player.isDead()) {
+    player.revive();
+    enemies = [new Enemy(...randomXYOffScreen(), Math.random() * 2 + 2)];
+    drawPowerup = false;
+    drawBomb = false;
+    spawning = true;
+    scarecrow.active = false;
+    scarecrow.timeout = false;
+    startTimePowerup = millis();
+    startTimeBomb = millis();
+    startTimeEnemy = millis();
+    wave = 1;
+    loop();
+    player.x = width / 2;
+    player.y = height / 2;
   }
 }
 
